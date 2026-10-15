@@ -9,13 +9,24 @@ async function requestSession(action){
   const socket=createConnection(pipe);let data='';
   socket.setTimeout(15000,()=>{socket.destroy();reject(new Error('A sessão desktop não respondeu.'));});
   socket.on('connect',()=>socket.write(JSON.stringify({token,action})+'\n'));
-  socket.on('error',reject);socket.on('data',chunk=>{data+=chunk;if(data.length>131072){socket.destroy();reject(new Error('Resposta de sessão inválida.'));}});
+  socket.on('error',reject);socket.on('data',chunk=>{data+=chunk;if(data.length>8*1024*1024){socket.destroy();reject(new Error('Resposta de sessão inválida.'));}});
   socket.on('end',()=>{try{const value=JSON.parse(data);data='';if(value.error)reject(new Error(value.error));else resolve(value);}catch{reject(new Error('A sessão desktop retornou dados inválidos.'));}});
  });
  return reply;
 }
 export async function notifyDesktopAuthRequired(){if(desktopSessionAvailable)await requestSession('require-login');}
 export async function loadDesktopSession(){
- let header=(await requestSession('read')).cookieHeader;
- return {async consume(metrics){await requestSession({kind:'consume',metrics});},async refresh(){header=(await requestSession('read')).cookieHeader;},cookieHeader(url){const target=new URL(url);if(target.protocol!=='https:'||target.hostname!=='gemini.google.com')throw new Error('Domínio de autenticação recusado.');return header;},clear(){header='';}};
+ let credentials=await requestSession('read');
+ return {
+  async consume(metrics){await requestSession({kind:'consume',metrics});},
+  async report(usage){await requestSession({kind:'usage',usage});},
+  async refresh(){credentials=await requestSession('read');},
+  // Conversation threads and thought signatures persist across engine turns.
+  async state(){return requestSession('threads-get');},
+  async saveThread(thread){await requestSession({kind:'thread',thread});},
+  async saveSignatures(signatures){await requestSession({kind:'signatures',signatures});},
+  apiKey(){if(!credentials.apiKey)throw new Error('Configure a chave da API Gemini no Gravity Code.');return credentials.apiKey;},
+  cookieHeader(url){const target=new URL(url);if(target.protocol!=='https:'||target.hostname!=='gemini.google.com')throw new Error('Domínio de autenticação recusado.');return credentials.cookieHeader;},
+  clear(){credentials={};},
+ };
 }

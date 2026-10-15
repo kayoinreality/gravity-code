@@ -1,74 +1,65 @@
 # Gravity Code
 
-Aplicativo experimental independente para Windows x64: interface própria,
-motor Claude Code e sessão Gemini conectada dentro do aplicativo.
+Aplicativo independente para Windows x64: interface inspirada no Claude Desktop,
+motor Claude Code oficial e Gemini (Web ou API) como provedor de inteligência.
 
 **Prévia técnica.** Não é uma recompilação oficial do Claude Desktop. A análise
 com REA orientou a reconstrução dos contratos; o código e os componentes
 proprietários do Desktop não são redistribuídos.
 
+## Novidades da versão
+
+- **Modos Chat e Code (estilo Claude Desktop):** alterne instantaneamente entre modo de
+  conversa normal (respostas diretas, sem execução local de ferramentas, 1 prompt por mensagem)
+  e modo Code (harness completo do Claude Code com leitura, escrita, terminal e diffs).
+- **Redução drástica de consumo de cota:**
+  - **Continuidade de conversa (Delta prompts):** etapas de ferramentas reusam a sessão
+    anterior no Gemini e enviam apenas o que mudou, evitando reenviar 50k+ tokens repetidos.
+  - **Prompt e esquemas compactados:** instruções enxutas mantendo apenas o essencial.
+  - **Parser tolerante:** respostas em prosa não causam erro de formato nem gastam nova tentativa.
+  - **Subagentes controlados:** ferramenta `Agent` desativada por padrão para evitar delegações automáticas que multiplicam o consumo.
+- **Suporte à API oficial do Google AI Studio (Gemini API):** além da sessão web da conta Google,
+  você pode configurar sua chave da API (`AIza...`) para function calling nativo e streaming.
+- **Gerenciador de Skills:** detecta skills em `~/.claude/skills`, `~/.gemini/config/skills` e no
+  projeto. Ative e desative quais skills injetar no contexto por conversa.
+- **Integração com Git e GitHub:** exibe a branch ativa, quantidade de arquivos pendentes e
+  status de autenticação do GitHub CLI (`gh`).
+- **Medidor diário de cota:** acompanhe solicitações e estimativa de tokens acumulados no dia.
+- **Visualização de Diffs:** veja com clareza as alterações de arquivos (`Edit` e `Write`)
+  com opção de "Sempre permitir nesta conversa".
+
 ## Usar no Windows
 
 1. Baixe o ZIP na página [Releases](https://github.com/kayoinreality/gravity-code/releases).
 2. Extraia a pasta inteira e abra `GravityCode.exe`.
-3. Clique em **Preparar motor**. O aplicativo baixa o Claude Code 2.1.270 do
-   servidor oficial da Anthropic e confere os hashes publicados no código.
-4. Clique em **Conectar conta Google** e entre manualmente na página Google
-   exibida dentro do aplicativo.
-5. Escolha uma pasta de projeto, o modelo e envie sua mensagem.
-
-Não é necessário instalar o Claude Desktop. O primeiro preparo requer internet
-e aproximadamente 230 MB para o motor, além dos arquivos do aplicativo. O
-executável desta prévia não tem assinatura digital do projeto.
+3. Escolha seu método de conexão:
+   - **Conta Google:** clique em **Conta Google ↗** e faça login na janela do aplicativo.
+   - **Gemini API:** abra **Ajustes ⚙**, selecione *Google AI Studio (API Key)* e cole sua chave.
+4. Para codificar no seu projeto, clique em **Preparar motor** (baixa o Claude Code 2.1.270 oficial
+   da Anthropic com hashes certificados) e selecione a pasta.
+5. Para tirar dúvidas ou conversar sem mexer em arquivos, basta alternar para **Chat**.
 
 ![Interface do Gravity Code](docs/assets/interface.png)
 
-## Modelos e consumo
+## Modos de Operação
 
-- Flash é a seleção inicial; Argon pode ser escolhido por conversa quando
-  estiver disponível no catálogo da conta. Não há troca silenciosa de modelo.
-- A ferramenta nativa `Agent` pode delegar tarefas. `haiku` é roteado para
-  Flash; `sonnet`/`opus` seguem o modelo principal selecionado. Isso usa a mesma
-  cota Gemini da conta.
-- Abrir o aplicativo ou validar o catálogo não gera texto. Não há geração de
-  sugestões automática, importação automática de cookies de outros aplicativos
-  ou carregamento de MCPs e plugins pessoais.
-- Cada envio permite no máximo **8 chamadas ao modelo**, compartilhadas com
-  agentes. Esse limite conta solicitações, não tokens nem porcentagem do plano.
-- As instruções do motor, os esquemas das ferramentas e o histórico são enviados
-  ao Gemini a cada etapa. Tarefas com ferramentas podem gastar bem mais que uma
-  pergunta no site. A estimativa local não representa a medição do Google.
+| Recurso | Modo Chat 💬 | Modo Code ⌨ |
+| :--- | :--- | :--- |
+| **Objetivo** | Dúvidas, explicações, revisões | Criar, editar, rodar comandos e testes |
+| **Pasta de projeto** | Opcional / Não necessária | Obrigatória |
+| **Motor local** | Não exige o motor Claude Code | Exige o motor Claude Code |
+| **Consumo de cota** | **Mínimo:** 1 solicitação por envio | Compartilha orçamento configurado (padrão: 8) |
+| **Execução de Bash/Ferramentas** | Desativada | Ativa com aprovação e diffs |
+| **Skills** | Injetáveis via seletor | Injetáveis via seletor |
 
-## Permissões e dados
+## Permissões e Segurança
 
-O motor usa permissões manuais e modo restrito às pastas de trabalho. Alterações
-e comandos que exigirem aprovação aparecem na conversa, com opções de permitir
-ou recusar. Leia a ação antes de aprovar: comandos aprovados executam com os
-privilégios do seu usuário.
+- Alterações em arquivos e comandos no terminal exibem um diálogo de permissão com diffs.
+- Você pode optar por permitir uma vez, negar ou escolher "Sempre permitir esta ferramenta nesta conversa".
+- A sessão Google fica em perfil Electron isolado (`%LOCALAPPDATA%\GravityCodeStandalone\Partitions\gravity-google`).
+- Chaves de API e configurações são armazenadas localmente no perfil do usuário.
 
-A sessão Google fica no perfil Electron separado
-`%LOCALAPPDATA%\GravityCodeStandalone`. Os cookies não são expostos à interface;
-o motor recebe a sessão em memória por canal local com um segredo aleatório,
-removido do ambiente antes de executar ferramentas. Conversas, contextos e
-resultados de ferramentas são salvos localmente nesse perfil e enviados ao
-Gemini quando usados em uma solicitação. Para sair da conta nesta prévia, feche
-o aplicativo e remova a subpasta `Partitions\gravity-google` desse perfil.
-
-## Limitações e validação
-
-A integração usa o protocolo web do Gemini e pode parar se ele mudar. Chamadas
-de ferramentas são traduzidas de JSON gerado pelo modelo; respostas fora do
-formato falham antes da execução. Ainda não há suporte a imagens, anexos,
-streaming progressivo de texto, sincronização de conta ou atualizações
-automáticas.
-
-O motor real foi verificado localmente com respostas simuladas, incluindo
-aprovação de escrita. O adaptador Google foi validado em um protótipo anterior;
-esta montagem independente ainda precisa de uma geração real depois que a cota
-da conta for restabelecida. Consulte [validação](docs/validation.md) e
-[achados do REA](docs/rea-findings.md).
-
-## Desenvolver
+## Desenvolver e Compilar
 
 Node.js 24 ou superior e Windows x64 para o empacotamento:
 
@@ -76,7 +67,7 @@ Node.js 24 ou superior e Windows x64 para o empacotamento:
 npm ci
 npm test
 npm run verify:public
-npm start
+npm run smoke:windows
 npm run build:windows
 ```
 

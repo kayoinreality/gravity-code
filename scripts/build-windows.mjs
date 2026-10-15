@@ -26,8 +26,9 @@ await fs.copyFile(path.join(root,'README.md'),path.join(output,'LEIA-ME.md'));
 await fs.cp(path.join(root,'docs'),path.join(output,'docs'),{recursive:true});
 await fs.copyFile(path.join(root,'THIRD_PARTY_NOTICES.md'),path.join(output,'THIRD_PARTY_NOTICES.md'));
 await fs.copyFile(path.join(root,'LICENSE'),path.join(output,'GRAVITY-LICENSE.txt'));
+for(const entry of await fs.readdir(output,{recursive:true})){const p=path.join(output,entry);const s=await fs.stat(p);if(s.mtime.getFullYear()<1980)await fs.utimes(p,new Date(),new Date());}
 const archive=path.join(dist,`GravityCode-${pkg.version}-windows-x64.zip`);await fs.rm(archive,{force:true});
-await run('powershell.exe',['-NoProfile','-NonInteractive','-Command','Compress-Archive -Path (Join-Path $env:GRAVITY_BUILD_APP "*") -DestinationPath $env:GRAVITY_BUILD_ZIP -CompressionLevel Optimal -Force'],{env:{...process.env,GRAVITY_BUILD_APP:output,GRAVITY_BUILD_ZIP:archive},windowsHide:true,maxBuffer:1024*1024});
+await run('powershell.exe',['-NoProfile','-NonInteractive','-Command','Compress-Archive -Path (Join-Path $env:GRAVITY_BUILD_APP "*") -DestinationPath $env:GRAVITY_BUILD_ZIP -CompressionLevel Optimal -Force'],{env:{...process.env,GRAVITY_BUILD_APP:output,GRAVITY_BUILD_ZIP:archive},windowsHide:true,maxBuffer:1024*1024,timeout:120000});
 const hash=createHash('sha256');for await(const chunk of createReadStream(archive))hash.update(chunk);
 await fs.writeFile(path.join(dist,'SHA256SUMS.txt'),`${hash.digest('hex')}  ${path.basename(archive)}\n`);
 console.log(JSON.stringify({archive,bytes:(await fs.stat(archive)).size,engineBundled:false,desktopDependency:false}));
