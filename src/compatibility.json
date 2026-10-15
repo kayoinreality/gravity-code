@@ -1,0 +1,7 @@
+{
+  "electronVersion": "43.7.11",
+  "engineVersion": "2.1.270",
+  "engineUrl": "https://downloads.claude.ai/claude-code-releases/2.1.270/win32-x64/claude.exe.zst",
+  "engineCompressedSha256": "2afb47ea1b1fe0bb224ddded3ddccf6303baac06f0f76c2921706c8bb9506d64",
+  "engineSha256": "fd7f35ec7761195ab5ba4eff423e48a78a7849e78f60d93ec31256cdb1a9ec7e"
+}

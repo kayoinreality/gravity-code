@@ -1,0 +1,15 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+const root=fileURLToPath(new URL('..',import.meta.url));
+const temp=await fs.mkdtemp(path.join(os.tmpdir(),'gravity-smoke-'));
+const screenshot=path.join(temp,'interface.png');
+const child=spawn(path.join(root,'dist','GravityCode','GravityCode.exe'),[`--smoke-test=${screenshot}`],{windowsHide:true,env:{...process.env,LOCALAPPDATA:temp},stdio:'ignore'});
+const timeout=setTimeout(()=>child.kill(),30000);
+const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('exit',resolve);});clearTimeout(timeout);assert.equal(code,0);
+const report=JSON.parse(await fs.readFile(screenshot+'.json','utf8'));assert.equal(report.dom.api,'object');assert.ok(report.dom.text.includes('Preparar motor'));assert.ok(report.dom.text.includes('Gemini Flash'));assert.equal(report.generations,0);assert.equal(report.standalone,true);
+const bytes=await fs.readFile(screenshot);assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.length>10000);
+console.log('Packaged Windows application passed: isolated profile, sandbox bridge, rendered UI, zero generations.');

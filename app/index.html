@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <title>Gravity Code</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./renderer.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Conversas">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">g<span>·</span></span><div><strong>Gravity Code</strong><span class="brand-caption">SEU ESPAÇO PARA CRIAR</span></div></div>
+        <button class="new-session" id="new-session"><span aria-hidden="true">＋</span> Nova conversa <kbd>Ctrl N</kbd></button>
+        <div class="sidebar-heading">CONVERSAS <span id="session-count">0</span></div>
+        <nav id="session-list" class="session-list" aria-label="Histórico de conversas"></nav>
+        <div class="sidebar-bottom">
+          <div class="connection-line"><span id="connection-dot" class="status-dot"></span><span id="connection-label">Gemini desconectado</span></div>
+          <button id="connect" class="connection-button">Conectar conta Google <span aria-hidden="true">↗</span></button>
+          <p id="connection-message" class="connection-message">Conecte sua conta para começar.</p>
+          <div class="sidebar-footer"><span>Feito para o seu fluxo.</span><span id="version">v0.1.0</span></div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div class="session-heading"><span class="header-eyebrow">ÁREA DE TRABALHO</span><h1 id="session-title">Uma ideia. Seu próximo projeto.</h1></div>
+          <button id="select-folder" class="folder-button" title="Escolher pasta do projeto"><span class="folder-icon" aria-hidden="true"></span><span id="project-name">Escolher pasta</span><span class="folder-chevron" aria-hidden="true">⌄</span></button>
+        </header>
+        <div id="engine-banner" class="engine-banner" role="status"><span class="engine-symbol" aria-hidden="true">◌</span><span id="engine-message">Prepare o motor oficial para começar.</span><progress id="engine-progress" max="100" aria-label="Preparação do motor"></progress><button id="prepare-engine" class="folder-button">Preparar motor</button></div>
+
+        <div id="conversation-scroll" class="conversation-scroll">
+          <section id="empty-state" class="empty-state" aria-label="Começar uma conversa">
+            <div class="orbital-mark" aria-hidden="true"><span>g</span><i></i></div>
+            <div class="eyebrow">MENOS DISTÂNCIA ENTRE IDEIA E CÓDIGO</div>
+            <h2>Vamos construir<br><span>alguma coisa boa.</span></h2>
+            <p>Explore uma ideia, entenda seu projeto ou coloque a próxima mudança em movimento.</p>
+            <div class="suggestions">
+              <button class="suggestion" data-prompt="Leia a estrutura deste projeto e explique como ele funciona. Comece pela documentação e pelos arquivos principais."><span aria-hidden="true">⌁</span><strong>Entender o projeto</strong><span>Encontre o ponto de partida.</span><b aria-hidden="true">↗</b></button>
+              <button class="suggestion" data-prompt="Quero implementar uma funcionalidade neste projeto. Primeiro, me ajude a definir o comportamento esperado e um plano pequeno de implementação."><span aria-hidden="true">✧</span><strong>Criar uma funcionalidade</strong><span>Da intenção ao primeiro passo.</span><b aria-hidden="true">↗</b></button>
+              <button class="suggestion" data-prompt="Me ajude a investigar um problema neste projeto. Vou descrever o que acontece e o resultado esperado."><span aria-hidden="true">⌘</span><strong>Investigar um problema</strong><span>Entenda a causa antes de mudar.</span><b aria-hidden="true">↗</b></button>
+            </div>
+          </section>
+          <section id="message-list" class="message-list" aria-label="Mensagens da conversa" aria-live="polite" aria-relevant="additions text"></section>
+          <div id="working-indicator" class="working-indicator" role="status" hidden><span class="working-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Trabalhando no seu projeto</span></div>
+        </div>
+
+        <div class="composer-region">
+          <section id="permissions" class="permissions" aria-label="Permissões pendentes"></section>
+          <p id="notice" class="notice" role="status" hidden></p>
+          <form id="composer-form" class="composer">
+            <label for="composer-text" class="sr-only">Sua mensagem</label>
+            <textarea id="composer-text" placeholder="O que vamos construir?" rows="2" maxlength="200000" spellcheck="true"></textarea>
+            <div class="composer-toolbar">
+              <div class="composer-options"><span class="model-dot" aria-hidden="true"></span><label for="model-select" class="sr-only">Modelo</label><select id="model-select" aria-label="Modelo"></select><span id="model-hint" class="model-hint">Mais leve para o dia a dia</span></div>
+              <button id="cancel" type="button" class="cancel-button" hidden><span aria-hidden="true">■</span> Parar</button>
+              <button id="send" type="submit" class="send-button" aria-label="Enviar mensagem" title="Enviar mensagem (Enter)"><span aria-hidden="true">↑</span></button>
+            </div>
+          </form>
+          <div class="composer-footnote"><span><kbd>Enter</kbd> envia · <kbd>Shift Enter</kbd> quebra a linha</span><span>Até 8 solicitações por envio, incluindo agentes. Cada etapa usa sua cota Gemini.</span></div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
