@@ -1185,8 +1185,14 @@
       });
     });
 
-    // Global keyboard shortcuts & click-outside
+    // Global keyboard shortcuts & click-outside & external links
     document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (a && a.href && (a.href.startsWith('https://') || a.href.startsWith('http://'))) {
+        e.preventDefault();
+        api?.openExternal?.(a.href);
+        return;
+      }
       if (!e.target.closest('#account-button') && !e.target.closest('#account-menu')) {
         if (el.accountMenu) el.accountMenu.hidden = true;
         el.accountButton?.setAttribute('aria-expanded', 'false');

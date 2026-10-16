@@ -1,6 +1,6 @@
 {
   "name": "gravity-code",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Independent experimental Windows desktop with Claude Code harness and Gemini session adapter",
   "main": "app/main.cjs",
   "private": true,

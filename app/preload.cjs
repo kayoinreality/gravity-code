@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('gravity', Object.freeze({
   refreshSkills: () => ipcRenderer.invoke('gravity-refresh-skills'),
   getGitStatus: () => ipcRenderer.invoke('gravity-get-git-status'),
   updateSettings: (settings) => ipcRenderer.invoke('gravity-update-settings', settings),
+  openExternal: (url) => ipcRenderer.invoke('gravity-open-external', url),
   onEvent: (callback) => {
     if (typeof callback !== 'function') throw new TypeError('O evento precisa de uma função.');
     const listener = (_event, payload) => callback(payload);

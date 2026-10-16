@@ -7,12 +7,12 @@ const { randomUUID, randomBytes, timingSafeEqual } = require('node:crypto');
 const { EngineTurn, MODELS } = require('../src/engine-controller.cjs');
 const { RequestBudget, DailyUsageTracker } = require('../src/request-budget.cjs');
 const manager = require('../src/engine-manager.cjs');
-const { createAccountSurface } = require('../src/provider/account-surface.cjs');
+const { createAccountSurface, GOOGLE_AUTH_USER_AGENT } = require('../src/provider/account-surface.cjs');
 const { getProjectGitStatus, getGitHubAuthStatus } = require('../src/git-service.cjs');
 const { discoverSkills, formatSkillsForPrompt } = require('../src/skills-service.cjs');
 const { ChatSession } = require('../src/chat-service.cjs');
 
-const VERSION = '0.3.0', DEFAULT_REQUEST_LIMIT = 8;
+const VERSION = '0.3.1', DEFAULT_REQUEST_LIMIT = 8;
 if (process.argv.some(value => value.startsWith('--smoke-test='))) app.disableHardwareAcceleration();
 app.setName('Gravity Code');
 
@@ -108,14 +108,16 @@ function addMessage(s, role, text) {
 function getGoogleSession() {
   if (!google) {
     google = session.fromPartition('persist:gravity-google');
-    google.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
-    // Google refuses sign-in from user agents that advertise Electron or the app name.
-    const chromeUA = session.defaultSession.getUserAgent()
-      .replace(/\s?Electron\/\S+/i, '')
-      .replace(/\s?GravityCode\/\S+/i, '')
-      .replace(/\s?gravity-code\/\S+/i, '')
-      .replace(/\s?Gravity Code\/\S+/i, '');
-    google.setUserAgent(chromeUA, 'pt-BR,pt;q=0.9,en;q=0.8');
+    google.setPermissionRequestHandler((_wc, permission, callback) => {
+      // Allow storage access required by Google Sign-In and cross-origin auth cookies
+      if (permission === 'storage-access' || permission === 'top-level-storage-access') {
+        return callback(true);
+      }
+      return callback(false);
+    });
+    // Google blocks sign-in from Chromium embedded webviews / abnormal Chrome versions.
+    // Emulating Firefox Desktop passes Google's authentication checks cleanly.
+    google.setUserAgent(GOOGLE_AUTH_USER_AGENT, 'pt-BR,pt;q=0.9,en;q=0.8');
   }
   return google;
 }
@@ -564,6 +566,14 @@ app.whenReady().then(async () => {
     return { canceled: result.canceled, path: result.filePaths[0] };
   });
   register('gravity-connect', () => { account.open(); return { ok: true }; });
+  register('gravity-open-external', (url) => {
+    if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://'))) {
+      const { shell } = require('electron');
+      shell.openExternal(url).catch(() => {});
+      return { ok: true };
+    }
+    return { ok: false };
+  });
   register('gravity-disconnect', async () => {
     await getGoogleSession().clearStorageData();
     clientPromise = undefined;

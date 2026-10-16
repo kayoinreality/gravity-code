@@ -296,16 +296,19 @@
               <label class="radio-card">
                 <input type="radio" name="provider-choice" value="api" id="provider-api">
                 <span>
-                  <strong>Chave de API (Google AI Studio)</strong>
-                  <small>Function calling nativo e streaming oficial.</small>
+                  <strong>Chave de API (Google AI Studio) — Recomendado</strong>
+                  <small>Estável, oficial, sem bloqueio de navegador e com streaming nativo.</small>
                 </span>
               </label>
             </div>
             <div id="api-key-group" class="field" hidden>
               <label for="gemini-api-key"><strong>Chave da API Gemini</strong></label>
               <input type="password" id="gemini-api-key" class="input" placeholder="AIza…">
-              <p>Fica guardada apenas neste computador.</p>
+              <p>Fica guardada apenas neste computador. Obtenha sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
             </div>
+            <p class="account-hint-box" style="font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.5;background:var(--bg-tertiary);padding:10px 12px;border-radius:8px;border:1px solid var(--border-color);">
+              💡 <strong>Nota sobre login Google:</strong> O Google bloqueia telas de login em navegadores embutidos por segurança (&quot;Esse navegador ou app pode não ser seguro&quot;). Se o Google bloquear o login da sua conta, use a opção <strong>Chave de API (Google AI Studio)</strong> acima — ela é gratuita, oficial e funciona diretamente sem depender de navegador.
+            </p>
           </section>
 
           <section class="settings-panel" data-panel="usage">
