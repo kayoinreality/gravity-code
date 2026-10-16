@@ -4,312 +4,357 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="description" content="Gravity Code: desktop independente com o harness Claude Code e o Gemini.">
     <title>Gravity Code</title>
     <link rel="stylesheet" href="./style.css">
     <script src="./renderer.js" defer></script>
   </head>
   <body>
-    <div class="app-shell">
-      <!-- SIDEBAR -->
-      <aside class="sidebar" aria-label="Conversas">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">g<span>·</span></span>
-          <div>
-            <strong>Gravity Code</strong>
-            <span class="brand-caption">MOTOR CLAUDE · ALMA GEMINI</span>
-          </div>
-        </div>
+    <!-- ICON SPRITE (lucide-style strokes, 24px grid) -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="brand-gradient" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#4285F4"/>
+          <stop offset=".38" stop-color="#34A853"/>
+          <stop offset=".68" stop-color="#FBBC05"/>
+          <stop offset="1" stop-color="#EA4335"/>
+        </linearGradient>
+      </defs>
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M9 3v18"/></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-branch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-wand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+      <symbol id="i-login" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></symbol>
+      <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+    </svg>
 
-        <!-- NEW SESSION ACTION -->
-        <div class="new-session-group">
-          <button class="new-session primary" id="new-code-session" title="Criar conversa no modo Code (Ctrl+N)">
-            <span class="session-icon" aria-hidden="true">⌨</span>
-            <span>Novo Code</span>
+    <div class="app" id="app">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar" aria-label="Conversas">
+        <div class="sidebar-inner">
+          <div class="sidebar-top">
+            <button class="icon-btn" id="toggle-sidebar" type="button" title="Recolher barra lateral" aria-label="Recolher barra lateral">
+              <svg class="icon"><use href="#i-panel"/></svg>
+            </button>
+            <div class="brand">
+              <span class="logo-slot" data-size="22"></span>
+              <span class="brand-name">Gravity</span>
+            </div>
+          </div>
+
+          <div class="mode-switch" role="tablist" aria-label="Modo">
+            <button id="mode-chat" type="button" role="tab" aria-selected="false" title="Conversa direta com o Gemini, sem ferramentas">
+              <svg class="icon"><use href="#i-message"/></svg><span>Chat</span>
+            </button>
+            <button id="mode-code" type="button" role="tab" aria-selected="true" title="Harness Claude Code com ferramentas no seu projeto">
+              <svg class="icon"><use href="#i-terminal"/></svg><span>Code</span>
+            </button>
+          </div>
+
+          <button id="new-chat" class="new-chat" type="button" title="Nova conversa (Ctrl+N)">
+            <span class="new-chat-icon"><svg class="icon"><use href="#i-plus"/></svg></span>
+            <span class="new-chat-label">Nova conversa</span>
             <kbd>Ctrl N</kbd>
           </button>
-          <button class="new-session secondary" id="new-chat-session" title="Criar conversa de Chat normal (Ctrl+Shift+N)">
-            <span class="session-icon" aria-hidden="true">💬</span>
-            <span>Novo Chat</span>
-          </button>
-        </div>
 
-        <div class="sidebar-heading">
-          <span>CONVERSAS</span>
-          <span id="session-count">0</span>
-        </div>
-        <nav id="session-list" class="session-list" aria-label="Histórico de conversas"></nav>
+          <div class="recents-label">Recentes</div>
+          <nav id="session-list" class="session-list" aria-label="Histórico de conversas"></nav>
 
-        <!-- SIDEBAR BOTTOM METRICS & STATUS -->
-        <div class="sidebar-bottom">
-          <!-- DAILY USAGE WIDGET -->
-          <div class="usage-card" id="usage-widget" title="Uso acumulado de cota no dia de hoje">
-            <div class="usage-header">
-              <span class="usage-title">COTA DIÁRIA</span>
-              <span id="usage-requests" class="usage-badge">0 solicitações</span>
-            </div>
-            <div class="usage-bar-track">
-              <div id="usage-progress-bar" class="usage-bar-fill"></div>
-            </div>
-            <div class="usage-sub" id="usage-tokens">0 tokens estimados</div>
-          </div>
-
-          <!-- GITHUB STATUS BADGE -->
-          <div class="status-pill github-pill" id="github-status-pill" title="Status da integração GitHub">
-            <span class="status-dot" id="github-dot"></span>
-            <span id="github-label">GitHub: verificando…</span>
-          </div>
-
-          <!-- GEMINI CONNECTION -->
-          <div class="status-pill gemini-pill" id="gemini-status-pill">
-            <span class="status-dot" id="connection-dot"></span>
-            <span id="connection-label">Gemini desconectado</span>
-          </div>
-
-          <div class="sidebar-actions">
-            <button id="connect" class="connection-button" title="Entrar na conta Google ou gerenciar">
-              <span>Conta Google</span>
-              <span aria-hidden="true">↗</span>
+          <div class="sidebar-bottom">
+            <button id="account-button" class="account-button" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="avatar" id="account-avatar"><svg class="icon"><use href="#i-user"/></svg></span>
+              <span class="account-text">
+                <strong id="account-name">Conta Google</strong>
+                <span id="account-sub">Desconectado</span>
+              </span>
+              <span class="status-dot" id="account-dot"></span>
+              <svg class="icon chevron"><use href="#i-chevron-up"/></svg>
             </button>
-            <button id="open-settings" class="settings-button" title="Configurações do aplicativo">
-              <span aria-hidden="true">⚙</span>
-              <span>Ajustes</span>
-            </button>
-          </div>
 
-          <p id="connection-message" class="connection-message">Conecte sua conta para começar.</p>
-
-          <div class="sidebar-footer">
-            <span>Desktop harness</span>
-            <span id="version">v0.2.0</span>
+            <div id="account-menu" class="popover account-menu" role="menu" hidden>
+              <div class="menu-status">
+                <span class="status-dot" id="menu-status-dot"></span>
+                <span id="menu-status-text">Desconectado</span>
+              </div>
+              <button id="account-connect" class="menu-item" type="button" role="menuitem">
+                <svg class="icon"><use href="#i-login"/></svg><span id="account-connect-label">Conectar conta Google</span>
+              </button>
+              <button id="account-settings" class="menu-item" type="button" role="menuitem">
+                <svg class="icon"><use href="#i-settings"/></svg><span>Configurações</span>
+              </button>
+              <div class="menu-sep"></div>
+              <div class="menu-meta">
+                <span><svg class="icon"><use href="#i-gauge"/></svg><span id="menu-usage">Hoje: 0 solicitações</span></span>
+                <span><svg class="icon"><use href="#i-github"/></svg><span id="menu-github">GitHub: verificando…</span></span>
+                <span class="menu-version" id="menu-version">Gravity Code</span>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
 
-      <!-- MAIN WORKSPACE -->
-      <main class="workspace">
-        <!-- WORKSPACE HEADER -->
-        <header class="workspace-header">
-          <!-- MODE SWITCHER (CLAUDE DESKTOP STYLE) -->
-          <div class="mode-switcher" role="tablist" aria-label="Modo da conversa">
-            <button class="mode-tab active" id="tab-mode-code" role="tab" aria-selected="true" title="Modo Code: Harness Claude Code completo com ferramentas e terminal">
-              <span class="mode-icon" aria-hidden="true">⌨</span>
-              <span>Code</span>
-            </button>
-            <button class="mode-tab" id="tab-mode-chat" role="tab" aria-selected="false" title="Modo Chat: Conversa normal direta sem execução de comandos (economiza cota)">
-              <span class="mode-icon" aria-hidden="true">💬</span>
-              <span>Chat</span>
-            </button>
-          </div>
-
-          <!-- SESSION TITLE -->
-          <div class="session-heading">
-            <span class="header-eyebrow" id="session-eyebrow">MODO CODE · HARNESS ATIVO</span>
-            <h1 id="session-title">Uma ideia. Seu próximo projeto.</h1>
-          </div>
-
-          <!-- HEADER ACTIONS (GIT, FOLDER, SKILLS) -->
-          <div class="header-controls">
-            <!-- GIT STATUS IN PROJECT (Visible in Code mode) -->
-            <div id="project-git-badge" class="git-badge" title="Status do repositório Git" hidden>
-              <span class="git-icon" aria-hidden="true">🌿</span>
-              <span id="git-branch-label">main</span>
-              <span id="git-dirty-count" class="git-dirty"></span>
-            </div>
-
-            <!-- SKILLS SELECTOR BUTTON -->
-            <button id="skills-button" class="header-pill-button" title="Selecionar Skills para esta conversa">
-              <span class="pill-icon" aria-hidden="true">✨</span>
-              <span id="skills-button-label">Skills (0)</span>
-              <span class="folder-chevron" aria-hidden="true">⌄</span>
-            </button>
-
-            <!-- PROJECT FOLDER SELECTOR (Code mode) -->
-            <button id="select-folder" class="folder-button" title="Escolher pasta do projeto">
-              <span class="folder-icon" aria-hidden="true"></span>
-              <span id="project-name">Escolher pasta</span>
-              <span class="folder-chevron" aria-hidden="true">⌄</span>
+      <!-- MAIN -->
+      <main class="workspace is-empty" id="workspace">
+        <header class="topbar">
+          <button class="icon-btn" id="open-sidebar" type="button" title="Abrir barra lateral" aria-label="Abrir barra lateral" hidden>
+            <svg class="icon"><use href="#i-panel"/></svg>
+          </button>
+          <h1 id="session-title" class="session-title">Nova conversa</h1>
+          <div class="topbar-actions">
+            <span id="git-chip" class="chip" title="Repositório Git" hidden>
+              <svg class="icon"><use href="#i-branch"/></svg>
+              <span id="git-branch">main</span>
+              <span id="git-dirty" class="chip-badge" hidden></span>
+            </span>
+            <button id="folder-chip" class="chip chip-button" type="button" title="Escolher pasta do projeto">
+              <svg class="icon"><use href="#i-folder"/></svg>
+              <span id="folder-name">Escolher pasta</span>
+              <svg class="icon chevron"><use href="#i-chevron"/></svg>
             </button>
           </div>
         </header>
 
-        <!-- ENGINE BANNER (Shown in Code mode if engine needs preparation) -->
-        <div id="engine-banner" class="engine-banner" role="status">
-          <span class="engine-symbol" aria-hidden="true">◌</span>
-          <span id="engine-message">Prepare o motor oficial para começar no modo Code.</span>
-          <progress id="engine-progress" max="100" aria-label="Preparação do motor"></progress>
-          <button id="prepare-engine" class="folder-button">Preparar motor</button>
-        </div>
-
-        <!-- CONVERSATION SCROLL REGION -->
-        <div id="conversation-scroll" class="conversation-scroll">
-          <!-- EMPTY STATE -->
-          <section id="empty-state" class="empty-state" aria-label="Começar uma conversa">
-            <div class="orbital-mark" aria-hidden="true"><span>g</span><i></i></div>
-            <div class="eyebrow" id="empty-eyebrow">MENOS DISTÂNCIA ENTRE IDEIA E CÓDIGO</div>
-            <h2 id="empty-title">Vamos construir<br><span>alguma coisa boa.</span></h2>
-            <p id="empty-subtitle">Explore uma ideia, entenda seu projeto ou coloque a próxima mudança em movimento.</p>
-            <div class="suggestions" id="suggestions-container"></div>
-          </section>
-
-          <!-- MESSAGES CONTAINER -->
-          <section id="message-list" class="message-list" aria-label="Mensagens da conversa" aria-live="polite" aria-relevant="additions text"></section>
-
-          <!-- WORKING INDICATOR -->
-          <div id="working-indicator" class="working-indicator" role="status" hidden>
-            <span class="working-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span id="working-text">Trabalhando no seu projeto…</span>
+        <div id="scroll" class="scroll">
+          <div class="thread">
+            <section id="message-list" class="message-list" aria-label="Mensagens da conversa" aria-live="polite"></section>
+            <div id="working" class="working" role="status" hidden>
+              <span class="logo-slot" data-size="22" data-animated="true"></span>
+              <span id="working-text">Trabalhando…</span>
+            </div>
           </div>
         </div>
 
-        <!-- COMPOSER REGION -->
-        <div class="composer-region">
-          <!-- PERMISSIONS QUEUE -->
+        <div class="dock" id="dock">
+          <div class="hero" id="hero">
+            <span class="logo-slot" data-size="40"></span>
+            <h2 id="greeting">Boa noite</h2>
+          </div>
+
+          <div id="engine-banner" class="banner" role="status" hidden>
+            <span class="banner-icon"><svg class="icon"><use href="#i-zap"/></svg></span>
+            <div class="banner-body">
+              <span id="engine-message">Prepare o motor oficial para começar no modo Code.</span>
+              <div class="progress" id="engine-progress-track" hidden><div class="progress-fill" id="engine-progress"></div></div>
+            </div>
+            <button id="prepare-engine" class="btn btn-secondary" type="button">Preparar motor</button>
+          </div>
+
           <section id="permissions" class="permissions" aria-label="Permissões pendentes"></section>
-          
+
           <p id="notice" class="notice" role="status" hidden></p>
 
-          <form id="composer-form" class="composer">
+          <form id="composer" class="composer" autocomplete="off">
             <label for="composer-text" class="sr-only">Sua mensagem</label>
-            <textarea id="composer-text" placeholder="O que vamos construir no projeto?" rows="2" maxlength="200000" spellcheck="true"></textarea>
-            
-            <div class="composer-toolbar">
-              <div class="composer-options">
-                <span class="model-dot" aria-hidden="true"></span>
-                <label for="model-select" class="sr-only">Modelo</label>
-                <select id="model-select" aria-label="Modelo">
-                  <option value="gemini-3.8-flash">Gemini Flash</option>
-                  <option value="gemini-4-argon">Gemini Argon</option>
-                </select>
-                <span id="model-hint" class="model-hint">Mais leve para o dia a dia</span>
-                <span id="active-skills-summary" class="active-skills-chip" hidden>✨ 0 skills</span>
-              </div>
-
-              <div class="composer-actions">
-                <button id="cancel" type="button" class="cancel-button" hidden>
-                  <span aria-hidden="true">■</span> Parar
+            <textarea id="composer-text" rows="1" maxlength="200000" spellcheck="true" placeholder="Como posso ajudar hoje?"></textarea>
+            <div class="composer-bar">
+              <div class="bar-left">
+                <button type="button" id="attach-button" class="round-btn" title="Adicionar" aria-haspopup="menu" aria-expanded="false">
+                  <svg class="icon"><use href="#i-plus"/></svg>
                 </button>
-                <button id="send" type="submit" class="send-button" aria-label="Enviar mensagem" title="Enviar mensagem (Enter)">
-                  <span aria-hidden="true">↑</span>
+                <button type="button" id="skills-button" class="ghost-btn" title="Skills desta conversa">
+                  <svg class="icon"><use href="#i-wand"/></svg>
+                  <span>Skills</span>
+                  <span id="skills-count" class="mini-badge" hidden>0</span>
+                </button>
+              </div>
+              <div class="bar-right">
+                <label class="model-picker" title="Modelo">
+                  <span class="sr-only">Modelo</span>
+                  <select id="model-select" aria-label="Modelo">
+                    <option value="gemini-3.8-flash">Gemini Flash</option>
+                    <option value="gemini-4-argon">Gemini Argon</option>
+                  </select>
+                  <svg class="icon chevron"><use href="#i-chevron"/></svg>
+                </label>
+                <button type="submit" id="send" class="send-btn" aria-label="Enviar mensagem" title="Enviar (Enter)" disabled>
+                  <svg class="icon"><use href="#i-arrow-up"/></svg>
+                </button>
+                <button type="button" id="cancel" class="send-btn stop" aria-label="Parar" title="Parar" hidden>
+                  <svg class="icon"><use href="#i-stop"/></svg>
                 </button>
               </div>
             </div>
+
+            <div id="attach-menu" class="popover attach-menu" role="menu" hidden>
+              <button id="attach-folder" class="menu-item" type="button" role="menuitem">
+                <svg class="icon"><use href="#i-folder"/></svg><span>Escolher pasta do projeto</span>
+              </button>
+              <button id="attach-skills" class="menu-item" type="button" role="menuitem">
+                <svg class="icon"><use href="#i-wand"/></svg><span>Gerenciar skills</span>
+              </button>
+            </div>
           </form>
 
-          <div class="composer-footnote">
-            <span><kbd>Enter</kbd> envia · <kbd>Shift Enter</kbd> quebra a linha</span>
-            <span id="composer-quota-note">Até 8 solicitações por envio. Continuidade de contexto ativada.</span>
-          </div>
+          <div id="suggestions" class="suggestions"></div>
+          <p id="footnote" class="footnote"></p>
         </div>
       </main>
     </div>
 
     <!-- SKILLS MODAL -->
     <div id="skills-modal" class="modal-backdrop" hidden>
-      <div class="modal-card" role="dialog" aria-labelledby="skills-modal-title">
+      <div class="modal skills-modal" role="dialog" aria-modal="true" aria-labelledby="skills-modal-title">
         <header class="modal-header">
-          <div class="modal-title-group">
-            <span class="modal-icon" aria-hidden="true">✨</span>
-            <h2 id="skills-modal-title">Gerenciar Skills da Conversa</h2>
-          </div>
-          <button class="modal-close" id="close-skills-modal" aria-label="Fechar">✕</button>
+          <h2 id="skills-modal-title">Skills</h2>
+          <button class="icon-btn" id="close-skills-modal" type="button" aria-label="Fechar"><svg class="icon"><use href="#i-x"/></svg></button>
         </header>
-        <p class="modal-description">
-          Selecione quais skills você quer ativar nesta conversa. As instruções das skills selecionadas serão injetadas no contexto sem desperdiçar cota desnecessária.
-        </p>
-        <div class="modal-toolbar">
-          <button id="refresh-skills-btn" class="pill-action-btn">⟳ Recarregar Skills</button>
-          <span id="skills-count-info" class="modal-counter">0 disponíveis</span>
+        <p class="modal-description">As instruções das skills ativas são adicionadas ao contexto desta conversa.</p>
+        <div class="skills-toolbar">
+          <label class="search-field">
+            <svg class="icon"><use href="#i-search"/></svg>
+            <span class="sr-only">Buscar skills</span>
+            <input id="skills-search" type="search" placeholder="Buscar skills">
+          </label>
+          <button id="refresh-skills-btn" class="btn btn-secondary" type="button"><svg class="icon"><use href="#i-refresh"/></svg>Recarregar</button>
         </div>
-        <div id="skills-list" class="skills-grid"></div>
+        <div class="skills-count" id="skills-count-info">0 disponíveis</div>
+        <div id="skills-list" class="skills-list"></div>
         <footer class="modal-footer">
-          <button class="button-secondary" id="skills-done-btn">Concluído</button>
+          <button class="btn btn-primary" id="skills-done-btn" type="button">Concluído</button>
         </footer>
       </div>
     </div>
 
     <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="modal-backdrop" hidden>
-      <div class="modal-card settings-card" role="dialog" aria-labelledby="settings-modal-title">
-        <header class="modal-header">
-          <div class="modal-title-group">
-            <span class="modal-icon" aria-hidden="true">⚙</span>
-            <h2 id="settings-modal-title">Configurações do Gravity Code</h2>
-          </div>
-          <button class="modal-close" id="close-settings-modal" aria-label="Fechar">✕</button>
-        </header>
+      <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <nav class="settings-nav" aria-label="Seções">
+          <h2 id="settings-modal-title">Configurações</h2>
+          <button class="settings-tab active" type="button" data-section="general"><svg class="icon"><use href="#i-settings"/></svg>Geral</button>
+          <button class="settings-tab" type="button" data-section="account"><svg class="icon"><use href="#i-user"/></svg>Conta e provedor</button>
+          <button class="settings-tab" type="button" data-section="usage"><svg class="icon"><use href="#i-gauge"/></svg>Uso e limites</button>
+          <button class="settings-tab" type="button" data-section="github"><svg class="icon"><use href="#i-github"/></svg>GitHub</button>
+          <button class="settings-tab" type="button" data-section="about"><svg class="icon"><use href="#i-info"/></svg>Sobre</button>
+        </nav>
+        <div class="settings-content">
+          <button class="icon-btn settings-close" id="close-settings-modal" type="button" aria-label="Fechar"><svg class="icon"><use href="#i-x"/></svg></button>
 
-        <div class="settings-body">
-          <!-- PROVEDOR GEMINI -->
-          <div class="setting-section">
-            <h3>Provedor do Motor Gemini</h3>
-            <p class="setting-desc">Escolha como o Gravity Code se comunica com o Gemini:</p>
-            <div class="setting-radios">
-              <label class="radio-label">
-                <input type="radio" name="provider-choice" value="web" id="provider-web" checked>
-                <div>
-                  <strong>Conta Google (Web)</strong>
-                  <span>Usa a sessão Google logada. Flash e Argon disponíveis.</span>
-                </div>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="provider-choice" value="api" id="provider-api">
-                <div>
-                  <strong>Google AI Studio (API Key oficial)</strong>
-                  <span>Function calling nativo, streaming em tempo real e sem risco de formato.</span>
-                </div>
-              </label>
-            </div>
-
-            <div id="api-key-group" class="setting-subgroup" hidden>
-              <label for="gemini-api-key" class="field-label">Chave da API Gemini (AIza…):</label>
-              <input type="password" id="gemini-api-key" class="text-input" placeholder="Cole sua AIzaSy... do Google AI Studio">
-              <span class="field-hint">Obtenha gratuitamente em aistudio.google.com. A chave fica guardada apenas no seu computador.</span>
-            </div>
-          </div>
-
-          <!-- GITHUB -->
-          <div class="setting-section">
-            <h3>Integração GitHub</h3>
-            <p class="setting-desc">Status da autenticação com o GitHub CLI no seu sistema:</p>
-            <div class="info-box" id="settings-github-info">Verificando...</div>
-          </div>
-
-          <!-- COTA E LIMITES -->
-          <div class="setting-section">
-            <h3>Controle de Cota e Subagentes</h3>
-            <div class="setting-row">
+          <section class="settings-panel active" data-panel="general">
+            <h3>Geral</h3>
+            <div class="field-row">
               <div>
-                <strong>Habilitar ferramenta Agent (Subagentes)</strong>
-                <p class="setting-desc">Desativada por padrão para economizar sua cota. Quando ligada, o modelo pode delegar tarefas a subagentes.</p>
+                <strong>Modo das novas conversas</strong>
+                <p>Usado ao criar uma conversa pelo botão ou por Ctrl+N.</p>
               </div>
-              <input type="checkbox" id="setting-enable-agent" class="toggle-switch">
-            </div>
-
-            <div class="setting-row" style="margin-top: 14px;">
-              <div>
-                <strong>Limite de solicitações por envio no modo Code</strong>
-                <p class="setting-desc">Número máximo de chamadas ao Gemini em cada rodada de ferramentas.</p>
-              </div>
-              <select id="setting-max-requests" class="number-select">
-                <option value="4">4 (Super econômico)</option>
-                <option value="8" selected>8 (Padrão recomendado)</option>
-                <option value="12">12 (Tarefas médias)</option>
-                <option value="20">20 (Tarefas longas)</option>
+              <select id="setting-default-mode" class="select">
+                <option value="code">Code</option>
+                <option value="chat">Chat</option>
               </select>
             </div>
-          </div>
+            <div class="field">
+              <label for="custom-skills-path"><strong>Pasta adicional de skills</strong></label>
+              <p>Opcional. Pastas com SKILL.md aparecem no seletor de skills.</p>
+              <input type="text" id="custom-skills-path" class="input" placeholder="%USERPROFILE%\.claude\skills">
+            </div>
+          </section>
 
-          <!-- SKILLS PATH -->
-          <div class="setting-section">
-            <h3>Pasta Adicional de Skills</h3>
-            <label for="custom-skills-path" class="field-label">Caminho da pasta local de skills (opcional):</label>
-            <input type="text" id="custom-skills-path" class="text-input" placeholder="Ex: %USERPROFILE%\.claude\skills">
-          </div>
+          <section class="settings-panel" data-panel="account">
+            <h3>Conta e provedor</h3>
+            <div class="connection-card">
+              <span class="status-dot" id="settings-connection-dot"></span>
+              <span id="settings-connection-status">Desconectado</span>
+              <div class="connection-actions">
+                <button id="settings-connect" class="btn btn-secondary" type="button">Conectar conta Google</button>
+                <button id="settings-disconnect" class="btn btn-ghost-danger" type="button">Desconectar</button>
+              </div>
+            </div>
+            <div class="radio-group" role="radiogroup" aria-label="Provedor">
+              <label class="radio-card">
+                <input type="radio" name="provider-choice" value="web" id="provider-web" checked>
+                <span>
+                  <strong>Conta Google</strong>
+                  <small>Usa sua sessão do Gemini na web. Flash e Argon conforme a conta.</small>
+                </span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="provider-choice" value="api" id="provider-api">
+                <span>
+                  <strong>Chave de API (Google AI Studio)</strong>
+                  <small>Function calling nativo e streaming oficial.</small>
+                </span>
+              </label>
+            </div>
+            <div id="api-key-group" class="field" hidden>
+              <label for="gemini-api-key"><strong>Chave da API Gemini</strong></label>
+              <input type="password" id="gemini-api-key" class="input" placeholder="AIza…">
+              <p>Fica guardada apenas neste computador.</p>
+            </div>
+          </section>
+
+          <section class="settings-panel" data-panel="usage">
+            <h3>Uso e limites</h3>
+            <div class="usage-grid" id="usage-today"></div>
+            <div class="field-row">
+              <div>
+                <strong>Ferramenta Agent (subagentes)</strong>
+                <p>Desligada por padrão para economizar cota.</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="setting-enable-agent"><span></span></label>
+            </div>
+            <div class="field-row">
+              <div>
+                <strong>Solicitações por envio no modo Code</strong>
+                <p>Limite de chamadas ao Gemini em cada rodada de ferramentas.</p>
+              </div>
+              <select id="setting-max-requests" class="select">
+                <option value="4">4 · econômico</option>
+                <option value="8">8 · padrão</option>
+                <option value="12">12 · médio</option>
+                <option value="20">20 · longo</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="settings-panel" data-panel="github">
+            <h3>GitHub</h3>
+            <p class="muted">Estado da autenticação do GitHub CLI (<code>gh</code>) neste computador.</p>
+            <div class="info-box" id="settings-github-info">Verificando…</div>
+          </section>
+
+          <section class="settings-panel" data-panel="about">
+            <h3>Sobre</h3>
+            <div class="about">
+              <span class="logo-slot" data-size="48"></span>
+              <div>
+                <strong>Gravity Code</strong>
+                <p id="about-version">Versão</p>
+              </div>
+            </div>
+            <p class="muted">Desktop independente e experimental. O motor Claude Code é baixado da Anthropic e verificado por SHA-256. Repositório: github.com/kayoinreality/gravity-code</p>
+          </section>
+
+          <footer class="settings-footer">
+            <button class="btn btn-secondary" id="cancel-settings-btn" type="button">Cancelar</button>
+            <button class="btn btn-primary" id="save-settings-btn" type="button">Salvar</button>
+          </footer>
         </div>
-
-        <footer class="modal-footer">
-          <button class="button-primary" id="save-settings-btn">Salvar Alterações</button>
-        </footer>
       </div>
     </div>
   </body>

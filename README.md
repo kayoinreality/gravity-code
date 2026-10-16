@@ -7,26 +7,27 @@ motor Claude Code oficial e Gemini (Web ou API) como provedor de inteligência.
 com REA orientou a reconstrução dos contratos; o código e os componentes
 proprietários do Desktop não são redistribuídos.
 
-## Novidades da versão
+## Novidades da versão (v0.3.0)
 
-- **Modos Chat e Code (estilo Claude Desktop):** alterne instantaneamente entre modo de
-  conversa normal (respostas diretas, sem execução local de ferramentas, 1 prompt por mensagem)
-  e modo Code (harness completo do Claude Code com leitura, escrita, terminal e diffs).
-- **Redução drástica de consumo de cota:**
-  - **Continuidade de conversa (Delta prompts):** etapas de ferramentas reusam a sessão
-    anterior no Gemini e enviam apenas o que mudou, evitando reenviar 50k+ tokens repetidos.
-  - **Prompt e esquemas compactados:** instruções enxutas mantendo apenas o essencial.
-  - **Parser tolerante:** respostas em prosa não causam erro de formato nem gastam nova tentativa.
-  - **Subagentes controlados:** ferramenta `Agent` desativada por padrão para evitar delegações automáticas que multiplicam o consumo.
-- **Suporte à API oficial do Google AI Studio (Gemini API):** além da sessão web da conta Google,
-  você pode configurar sua chave da API (`AIza...`) para function calling nativo e streaming.
-- **Gerenciador de Skills:** detecta skills em `~/.claude/skills`, `~/.gemini/config/skills` e no
-  projeto. Ative e desative quais skills injetar no contexto por conversa.
-- **Integração com Git e GitHub:** exibe a branch ativa, quantidade de arquivos pendentes e
-  status de autenticação do GitHub CLI (`gh`).
-- **Medidor diário de cota:** acompanhe solicitações e estimativa de tokens acumulados no dia.
-- **Visualização de Diffs:** veja com clareza as alterações de arquivos (`Edit` e `Write`)
-  com opção de "Sempre permitir nesta conversa".
+- **Nova Interface (Clone fiel da experiência Claude Desktop):**
+  - Layout refinado com barra lateral retrátil animada (`Ctrl+N` para nova conversa).
+  - Controle segmentado superior para alternar entre **Modo Chat** e **Modo Code**.
+  - Estado vazio com saudação contextual ("Bom dia", "Boa tarde", "Boa noite") e sugestões rápidas em chips.
+  - Composer elegante com ajuste automático de altura, seleção rápida de modelo e menu de anexos.
+  - Mensagens limpas e legíveis: balões do usuário alinhados à direita e respostas diretas do assistente com blocos de código com botão de cópia.
+  - Ferramentas compactas e recolhíveis com diffs visuais coloridos e status em tempo real.
+- **Identidade Visual Antigravity:**
+  - Paleta escura neutra e elegante com acentos em azul `#4f8bff` (e suporte automático a tema claro).
+  - Ícone e marca Antigravity com gradiente de órbita e animação de processamento.
+- **Correção Completa do Login Google:**
+  - Eliminação de referências quebradas de elementos da interface que travavam o acionamento do login.
+  - User-Agent higienizado na partição de autenticação, evitando o bloqueio "Este navegador ou app pode não ser seguro" do Google.
+  - Suporte completo a redirecionamentos e domínios regionais do Google (`accounts.google.com.br`, etc.).
+  - Validação silenciosa e restauração automática de sessão existente sem consumo de cota.
+- **Controle de Cota e Recursos:**
+  - Gerenciador de Skills integrado com busca e toggles por conversa.
+  - Painel de status Git / GitHub em tempo real.
+  - Medidor de cota diária e seleção de limites por turno.
 
 ## Usar no Windows
 

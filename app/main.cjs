@@ -12,7 +12,7 @@ const { getProjectGitStatus, getGitHubAuthStatus } = require('../src/git-service
 const { discoverSkills, formatSkillsForPrompt } = require('../src/skills-service.cjs');
 const { ChatSession } = require('../src/chat-service.cjs');
 
-const VERSION = '0.2.0', DEFAULT_REQUEST_LIMIT = 8;
+const VERSION = '0.3.0', DEFAULT_REQUEST_LIMIT = 8;
 if (process.argv.some(value => value.startsWith('--smoke-test='))) app.disableHardwareAcceleration();
 app.setName('Gravity Code');
 
@@ -30,6 +30,7 @@ const settings = {
   enableAgent: false,
   maxRequestsPerTurn: DEFAULT_REQUEST_LIMIT,
   customSkillsDir: '',
+  defaultMode: 'code',
 };
 
 const state = {
@@ -76,11 +77,12 @@ function find(id) {
   return s;
 }
 
-function createSession(mode = 'code') {
+function createSession(mode = settings.defaultMode || 'code') {
   const id = randomUUID();
   state.sessions.unshift({
     id,
-    title: mode === 'chat' ? 'Nova conversa de chat' : 'Novo projeto',
+    title: 'Nova conversa',
+    untitled: true,
     mode, // 'code' or 'chat'
     model: MODELS[0],
     projectPath: '',
@@ -107,6 +109,13 @@ function getGoogleSession() {
   if (!google) {
     google = session.fromPartition('persist:gravity-google');
     google.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+    // Google refuses sign-in from user agents that advertise Electron or the app name.
+    const chromeUA = session.defaultSession.getUserAgent()
+      .replace(/\s?Electron\/\S+/i, '')
+      .replace(/\s?GravityCode\/\S+/i, '')
+      .replace(/\s?gravity-code\/\S+/i, '')
+      .replace(/\s?Gravity Code\/\S+/i, '');
+    google.setUserAgent(chromeUA, 'pt-BR,pt;q=0.9,en;q=0.8');
   }
   return google;
 }
@@ -256,12 +265,25 @@ async function refreshSkills(projectPath) {
   return state.skills;
 }
 
+async function markConnected() {
+  state.connection = { connected: true, message: 'Conta Google conectada. Flash é o padrão; Argon pode ser escolhido por conversa.' };
+  try {
+    const prov = await client();
+    if (prov.publicModels) {
+      const models = prov.publicModels();
+      if (models.length) state.models = models;
+    }
+  } catch {}
+  changed();
+}
+
 async function send({ sessionId, text, model } = {}) {
   const s = find(sessionId);
   if (s.busy) throw Error('Esta conversa já está em andamento.');
   if (typeof text !== 'string' || !text.trim() || text.length > 200000) throw Error('Escreva uma mensagem de até 200.000 caracteres.');
-  if (s.title === 'Nova conversa' || s.title === 'Nova conversa de chat' || s.title === 'Novo projeto') {
-    s.title = text.trim().slice(0, 60);
+  if (s.untitled || s.title === 'Nova conversa' || s.title === 'Nova conversa de chat' || s.title === 'Novo projeto') {
+    s.title = text.trim().replace(/\s+/g, ' ').slice(0, 60);
+    s.untitled = false;
   }
 
   const isApi = settings.provider === 'api' || Boolean(settings.apiKey);
@@ -420,7 +442,7 @@ app.whenReady().then(async () => {
   state.dailyUsage = dailyTracker.getToday();
   state.settings = settings;
 
-  if (!state.sessions.length) createSession('code');
+  if (!state.sessions.length) createSession();
 
   providerDirectory = await copyProvider();
   engine = await manager.verifiedEngine(root);
@@ -440,14 +462,14 @@ app.whenReady().then(async () => {
     minWidth: 1020,
     minHeight: 720,
     title: 'Gravity Code',
-    backgroundColor: '#15191b',
+    backgroundColor: '#131416',
     autoHideMenuBar: true,
     webPreferences: smokeMode ? { ...preferences, offscreen: true } : { sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
 
   mainView = smokeMode ? { webContents: window.webContents } : new WebContentsView({ webPreferences: preferences });
   if (!smokeMode) {
-    mainView.setBackgroundColor('#15191b');
+    mainView.setBackgroundColor('#131416');
     window.contentView.addChildView(mainView);
     const layout = () => {
       const { width, height } = window.getContentBounds();
@@ -466,15 +488,13 @@ app.whenReady().then(async () => {
     getWindow: () => window,
     getGoogleSession,
     validate: () => { clientPromise = undefined; return client(); },
-    onReady: async () => {
-      state.connection = { connected: true, message: 'Conta conectada. Flash é o padrão; Argon pode ser escolhido por conversa.' };
-      try {
-        const prov = await client();
-        state.models = prov.publicModels ? prov.publicModels() : state.models;
-      } catch {}
-      changed();
-    },
+    onReady: markConnected,
   });
+
+  // Silent validation of a stored Google session. Only reads the model catalogue; generates no text.
+  if (!smokeMode) {
+    cookies().then(() => client()).then(() => markConnected()).catch(() => {});
+  }
 
   // Initial skills and git discovery
   const initialSession = state.sessions.find(s => s.id === state.activeId);
@@ -483,7 +503,7 @@ app.whenReady().then(async () => {
 
   // Register IPC handlers
   register('gravity-state', () => state);
-  register('gravity-create-session', (mode) => createSession(mode || 'code'));
+  register('gravity-create-session', (mode) => createSession(mode === 'chat' || mode === 'code' ? mode : undefined));
   register('gravity-set-mode', ({ sessionId, mode }) => {
     const s = find(sessionId);
     s.mode = mode;
@@ -493,7 +513,7 @@ app.whenReady().then(async () => {
   register('gravity-delete-session', (id) => {
     state.sessions = state.sessions.filter(s => s.id !== id);
     if (state.activeId === id) state.activeId = state.sessions[0]?.id || null;
-    if (!state.sessions.length) createSession('code');
+    if (!state.sessions.length) createSession();
     changed();
     return { ok: true };
   });
@@ -544,6 +564,19 @@ app.whenReady().then(async () => {
     return { canceled: result.canceled, path: result.filePaths[0] };
   });
   register('gravity-connect', () => { account.open(); return { ok: true }; });
+  register('gravity-disconnect', async () => {
+    await getGoogleSession().clearStorageData();
+    clientPromise = undefined;
+    for (const chat of chatSessions.values()) chat.cancel();
+    chatSessions.clear();
+    state.connection = { connected: false, message: 'Conta Google desconectada.' };
+    changed();
+    return { ok: true };
+  });
+  register('gravity-set-active', (id) => {
+    if (state.sessions.some(s => s.id === id)) { state.activeId = id; changed(); }
+    return { ok: true };
+  });
   register('gravity-send', send);
   register('gravity-cancel', id => {
     turns.get(id)?.cancel();

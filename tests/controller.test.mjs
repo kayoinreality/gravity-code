@@ -70,9 +70,13 @@ test('git status service safely handles non-git folders', async () => {
 
 test('Google login navigation requires exact HTTPS hosts', () => {
   assert.equal(allowedNavigation('https://accounts.google.com/AccountChooser'), true);
+  assert.equal(allowedNavigation('https://accounts.google.com.br/accounts/SetSID'), true);
+  assert.equal(allowedNavigation('https://www.google.com/'), true);
   for (const url of [
     'http://accounts.google.com',
     'https://accounts.google.com.evil.example',
+    'https://accounts.google.com.br.evil.example',
+    'https://accounts.google.evil.com',
     'https://accounts.google.com@evil.example',
     'file:///index.html',
     'https://accounts.google.com:444/',

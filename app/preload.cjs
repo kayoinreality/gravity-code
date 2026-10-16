@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('gravity', Object.freeze({
   deleteSession: (id) => ipcRenderer.invoke('gravity-delete-session', id),
   selectFolder: (sessionId) => ipcRenderer.invoke('gravity-select-folder', sessionId),
   connect: () => ipcRenderer.invoke('gravity-connect'),
+  disconnect: () => ipcRenderer.invoke('gravity-disconnect'),
+  setActive: (id) => ipcRenderer.invoke('gravity-set-active', id),
   prepareEngine: () => ipcRenderer.invoke('gravity-prepare-engine'),
   send: ({ sessionId, text, model }) => ipcRenderer.invoke('gravity-send', { sessionId, text, model }),
   cancel: (sessionId) => ipcRenderer.invoke('gravity-cancel', sessionId),

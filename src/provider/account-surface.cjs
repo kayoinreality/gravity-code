@@ -2,8 +2,10 @@ const {BrowserWindow,WebContentsView,ipcMain}=require('electron');
 const path=require('node:path');
 const GOOGLE_HOME='https://gemini.google.com/app';
 const GOOGLE_SIGN_IN='https://accounts.google.com/AccountChooser?continue='+encodeURIComponent(GOOGLE_HOME);
-const allowed=new Set(['accounts.google.com','accounts.youtube.com','myaccount.google.com','gemini.google.com','gstatic.com','oauth-redirect.googleusercontent.com','consent.google.com']);
-function allowedNavigation(url){try{const target=new URL(url);return target.protocol==='https:'&&!target.username&&!target.password&&allowed.has(target.hostname)&&(!target.port||target.port==='443');}catch{return false;}}
+const EXACT=new Set(['accounts.youtube.com','myaccount.google.com','gemini.google.com','consent.google.com','oauth-redirect.googleusercontent.com','ssl.gstatic.com','www.gstatic.com','apis.google.com','play.google.com','ogs.google.com']);
+// Google finishes sign-in through regional hosts such as accounts.google.com.br/accounts/SetSID.
+const GOOGLE_REGIONAL=/^(accounts|www)\.google\.(com|com?\.[a-z]{2}|[a-z]{2})$/;
+function allowedNavigation(url){try{const target=new URL(url);if(target.protocol!=='https:'||target.username||target.password||(target.port&&target.port!=='443'))return false;return EXACT.has(target.hostname)||GOOGLE_REGIONAL.test(target.hostname);}catch{return false;}}
 function createAccountSurface({getWindow,getGoogleSession,validate,onReady}){
  let surface,pendingOpen,validationRunning=false,lastValidation=0,connectionValidated=false;
  function status(message,busy=false,origin){if(surface&&!surface.header.webContents.isDestroyed())surface.header.webContents.send('gravity-account-status',{message,busy,origin});}
@@ -23,10 +25,10 @@ function createAccountSurface({getWindow,getGoogleSession,validate,onReady}){
   try{
    const provider=await validate();connectionValidated=true;
    status('Conta conectada. Voltando ao Gravity Code…',true);
-   console.log(JSON.stringify({event:'gravity-account-connected',models:provider.models.map(model=>model.label)}));
+   console.log(JSON.stringify({event:'gravity-account-connected',models:(provider?.models||[]).map(model=>model.label)}));
    await surface?.session.cookies.flushStore();
    setTimeout(()=>{close();Promise.resolve(onReady?.()).catch(()=>{});},600);
-  }catch{status('Conclua a entrada na página do Google para conectar sua conta.');}
+  }catch(error){console.error('gravity-account-validation',error);status(`Não foi possível validar a conta: ${error?.message||'erro desconhecido'}`);}
   finally{validationRunning=false;}
  }
  function open(){
@@ -36,8 +38,8 @@ function createAccountSurface({getWindow,getGoogleSession,validate,onReady}){
   const session=getGoogleSession();
   const header=new WebContentsView({webPreferences:{preload:path.join(__dirname,'auth-header-preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
   const google=new WebContentsView({webPreferences:{session,sandbox:true,contextIsolation:true,nodeIntegration:false}});
-  header.setBackgroundColor('#17191f');google.setBackgroundColor('#ffffff');
-  const layout=()=>{if(window.isDestroyed())return;const {width,height}=window.getContentBounds();header.setBounds({x:0,y:0,width,height:92});google.setBounds({x:0,y:92,width,height:Math.max(0,height-92)});};
+  header.setBackgroundColor('#0e0f11');google.setBackgroundColor('#ffffff');
+  const layout=()=>{if(window.isDestroyed())return;const {width,height}=window.getContentBounds();header.setBounds({x:0,y:0,width,height:64});google.setBounds({x:0,y:64,width,height:Math.max(0,height-64)});};
   const onCookie=(_event,cookie,_cause,removed)=>{if(!removed&&cookie.name==='__Secure-1PSID')setTimeout(verify,1200);};
   surface={window,header,google,layout,session,onCookie};
   window.contentView.addChildView(google);window.contentView.addChildView(header);layout();window.on('resize',layout);window.once('closed',close);session.cookies.on('changed',onCookie);
@@ -49,6 +51,7 @@ function createAccountSurface({getWindow,getGoogleSession,validate,onReady}){
   header.webContents.on('will-navigate',event=>event.preventDefault());header.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   header.webContents.loadFile(path.join(__dirname,'auth-header.html'));
   google.webContents.loadURL(GOOGLE_SIGN_IN).catch(()=>status('Não foi possível abrir a entrada Google. Verifique sua conexão.'));
+  session.cookies.get({url:GOOGLE_HOME}).then(stored=>{if(stored.some(cookie=>cookie.name==='__Secure-1PSID'))setTimeout(verify,800);}).catch(()=>{});
   window.show();window.focus();
   console.log(JSON.stringify({event:'gravity-account-surface-opened',mode:'single-window',origin:'accounts.google.com'}));
  }
